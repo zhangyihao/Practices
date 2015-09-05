@@ -13,3 +13,14 @@ Libray地址：[NineOldAndroids](https://github.com/JakeWharton/NineOldAndroids)
 jar包地址：[nineoldandroids-2.4.0.jar](https://github.com/JakeWharton/NineOldAndroids/downloads)
 
 该库支持的图表类型有：线性图、饼图、柱状图等，具体请参考该项目github介绍部分。
+
+###TestGalleryImageShow
+使用HorizonScrollView代替Gallery展示图片，图片可以进行左右滑动，并且长按图片可以进行删除操作。
+
+bugs：
+
+1. 长按图片时，图片右上角显示删除图标，点击删除图标可进行删除，但是，点击图片外的区域（图片失去焦点）时，删除图标不能隐藏。
+
+###RunTracker
+
+利用GPS进行定位的示例。
