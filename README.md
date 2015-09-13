@@ -24,3 +24,10 @@ bugs：
 ###RunTracker
 
 利用GPS进行定位的示例。
+
+###PickPicFromSystemGallery
+
+模仿微信的图片选择器。
+
+其中,Sample1Activity示例为：调用系统图库，选择一张图片，然后展示。Sample2Activity示例为：
+

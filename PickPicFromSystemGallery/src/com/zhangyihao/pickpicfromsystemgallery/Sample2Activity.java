@@ -4,7 +4,7 @@ import android.app.Activity;
 import android.os.Bundle;
 import android.util.DisplayMetrics;
 
-public class Sample2 extends Activity {
+public class Sample2Activity extends Activity {
 	
 	private int mScreenHeight;
 
@@ -17,6 +17,21 @@ public class Sample2 extends Activity {
 		getWindowManager().getDefaultDisplay().getMetrics(outMetrics);
 		
 		mScreenHeight = outMetrics.heightPixels;
+		
+		initView();
+		getImages();
+		initEvent();
+	}
+	
+	private void initView() {
+		
+	}
+	
+	private void getImages() {
+		
+	}
+	
+	private void initEvent() {
 		
 	}
 	
