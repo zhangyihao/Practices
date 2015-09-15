@@ -3,8 +3,12 @@ package com.zhangyihao.pickpicfromsystemgallery.sample2;
 import java.util.LinkedList;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Semaphore;
+
 import android.annotation.TargetApi;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.BitmapFactory.Options;
 import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
@@ -19,6 +23,7 @@ public class ImageLoader {
 	
 	private static ImageLoader mInstance;
 	private static final int DEFAULT_THERAD_COUNT = 1;
+	private Semaphore mPoolThreadHandlerSemaphore = new Semaphore(0);
 	
 	/**
 	 * 存放图片缓冲
@@ -53,6 +58,7 @@ public class ImageLoader {
 						mThreadPool.execute(getTask());
 					}
 				};
+				mPoolThreadHandlerSemaphore.release();
 				Looper.loop();
 			}
 			
@@ -91,7 +97,7 @@ public class ImageLoader {
 	 * @param path
 	 * @param imageView
 	 */
-	private void loadImage(String path, final ImageView imageView) {
+	private void loadImage(final String path, final ImageView imageView) {
 		imageView.setTag(path);
 		if(mUIHandler == null) {
 			mUIHandler = new Handler() {
@@ -110,14 +116,16 @@ public class ImageLoader {
 				}
 			};
 		} else {
-			addTasks(new Runnable() {
+			addTask(new Runnable() {
 				@Override
 				public void run() {
 					// TODO 加载图片
 					// 图片压缩
 					// 1. 获取图片需要显示的大小
 					ImageSize imageSize = getImageViewSize(imageView);
-					
+					Bitmap bitmap = decodeBitmapFromPath(path, imageSize.width, imageSize.height);
+					addBitmapToLruCache(path, bitmap);
+					refreshUI(path, imageView, bitmap);
 				}
 
 				
@@ -126,20 +134,63 @@ public class ImageLoader {
 		
 		Bitmap bm = getBitmapFromLruCache(path);
 		if(bm!=null) {
-			BitmapHolder holder = new BitmapHolder();
-			holder.bitmap = bm;
-			holder.imageView = imageView;
-			holder.path = path;
-			
-			Message msg = Message.obtain();
-			msg.obj = holder;
-			mUIHandler.sendMessage(msg);
+			refreshUI(path, imageView, bm);
 		}
+	}
+
+	private void refreshUI(final String path, final ImageView imageView, Bitmap bm) {
+		BitmapHolder holder = new BitmapHolder();
+		holder.bitmap = bm;
+		holder.imageView = imageView;
+		holder.path = path;
+		
+		Message msg = Message.obtain();
+		msg.obj = holder;
+		mUIHandler.sendMessage(msg);
 	}
 	
 	
-	private void addTasks(Runnable runnable) {
+	protected void addBitmapToLruCache(String path, Bitmap bitmap) {
+		if(getBitmapFromLruCache(path)==null && bitmap!=null) {
+			mLruCache.put(path, bitmap);
+		}
+	}
+
+	protected Bitmap decodeBitmapFromPath(String path, int width, int height) {
+		BitmapFactory.Options options = new BitmapFactory.Options();
+		options.inJustDecodeBounds = true;
+		BitmapFactory.decodeFile(path);
+		
+		options.inSampleSize = caculateInSampleSize(options, width, height);
+		options.inJustDecodeBounds = false;
+		return BitmapFactory.decodeFile(path, options);
+	}
+
+	private int caculateInSampleSize(Options options, int reqWidth, int reqHeight) {
+		int width = options.outWidth;
+		int height = options.outHeight;
+		int inSampleSize = 1;
+		
+		if(width>reqWidth || height>reqHeight) {
+			int widthRadio = Math.round(width*1.0f/reqWidth);
+			int heightRadio = Math.round(height*1.0f/reqHeight);
+			
+			inSampleSize = Math.max(widthRadio, heightRadio);
+		}
+		
+		return inSampleSize;
+	}
+
+	private synchronized void addTask(Runnable runnable) {
 		mTaskQueue.add(runnable);
+		
+		try {
+			if(mPoolThreadHandler == null) {
+				mPoolThreadHandlerSemaphore.acquire();
+			}
+		} catch (InterruptedException e) {
+		}
+		
 		mPoolThreadHandler.sendEmptyMessage(0x010);
 	}
 	
