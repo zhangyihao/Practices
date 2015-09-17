@@ -1,5 +1,6 @@
 package com.zhangyihao.pickpicfromsystemgallery.sample2;
 
+import java.lang.reflect.Field;
 import java.util.LinkedList;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -24,6 +25,7 @@ public class ImageLoader {
 	private static ImageLoader mInstance;
 	private static final int DEFAULT_THERAD_COUNT = 1;
 	private Semaphore mPoolThreadHandlerSemaphore = new Semaphore(0);
+	private Semaphore mPoolThreadSemaphore;
 	
 	/**
 	 * 存放图片缓冲
@@ -43,6 +45,28 @@ public class ImageLoader {
 		init(threadCount, type);
 	}
 	
+	public static ImageLoader getInstance() {
+		if(mInstance == null) {
+			synchronized (mInstance) {
+				if(mInstance == null) {
+					mInstance = new ImageLoader(DEFAULT_THERAD_COUNT, myType);
+				}
+			}
+		}
+		return mInstance;
+	}
+	
+	public static ImageLoader getInstance(int threadCount, Type type) {
+		if(mInstance == null) {
+			synchronized (mInstance) {
+				if(mInstance == null) {
+					mInstance = new ImageLoader(threadCount, type);
+				}
+			}
+		}
+		return mInstance;
+	}
+	
 	private void init(int threadCount, Type type) {
 		//后台轮询线程
 		mPoolThread = new Thread() {
@@ -56,6 +80,10 @@ public class ImageLoader {
 					public void handleMessage(Message msg) {
 						//线程池中取任务处理
 						mThreadPool.execute(getTask());
+						try {
+							mPoolThreadSemaphore.acquire();
+						} catch (InterruptedException e) {
+						}
 					}
 				};
 				mPoolThreadHandlerSemaphore.release();
@@ -79,25 +107,16 @@ public class ImageLoader {
 		mThreadPool = Executors.newFixedThreadPool(threadCount);
 		mTaskQueue = new LinkedList<Runnable>();
 		myType = type;
+		mPoolThreadSemaphore = new Semaphore(threadCount);
 	}
 	
-	public static ImageLoader getInstance() {
-		if(mInstance == null) {
-			synchronized (mInstance) {
-				if(mInstance == null) {
-					mInstance = new ImageLoader(DEFAULT_THERAD_COUNT, myType);
-				}
-			}
-		}
-		return mInstance;
-	}
 	
 	/**
 	 * 根据Path设置ImageView图片
 	 * @param path
 	 * @param imageView
 	 */
-	private void loadImage(final String path, final ImageView imageView) {
+	public void loadImage(final String path, final ImageView imageView) {
 		imageView.setTag(path);
 		if(mUIHandler == null) {
 			mUIHandler = new Handler() {
@@ -119,13 +138,15 @@ public class ImageLoader {
 			addTask(new Runnable() {
 				@Override
 				public void run() {
-					// TODO 加载图片
 					// 图片压缩
 					// 1. 获取图片需要显示的大小
 					ImageSize imageSize = getImageViewSize(imageView);
 					Bitmap bitmap = decodeBitmapFromPath(path, imageSize.width, imageSize.height);
+					// 2. 添加到LruCache
 					addBitmapToLruCache(path, bitmap);
+					// 3. 刷新UI
 					refreshUI(path, imageView, bitmap);
+					mPoolThreadSemaphore.release();
 				}
 
 				
@@ -217,7 +238,8 @@ public class ImageLoader {
 			width = layoutParams.width;
 		}
 		if(width<=0) {
-			width = imageView.getMaxWidth();
+			width = getImageViewFieldValue(imageView, "mMaxWidth");
+//			width = imageView.getMaxWidth();
 		}
 		
 		if(width<=0) {
@@ -229,7 +251,8 @@ public class ImageLoader {
 			height = layoutParams.height;
 		}
 		if(height<=0) {
-			height = imageView.getMaxHeight();
+//			height = imageView.getMaxHeight();
+			height = getImageViewFieldValue(imageView, "mMaxHeight");
 		}
 		
 		if(height<=0) {
@@ -239,6 +262,27 @@ public class ImageLoader {
 		size.width = width;
 		size.height = height;
 		return size;
+	}
+	
+	/**
+	 * 通过反射获取ImageView的属性值（宽度、高度）
+	 * 使用反射，兼容低版本
+	 * @param object
+	 * @param fieldName
+	 * @return
+	 */
+	private int getImageViewFieldValue(Object object, String fieldName) {
+		int value = 0;
+		try {
+			Field field = ImageView.class.getDeclaredField(fieldName);
+			field.setAccessible(true);
+			int fieldValue = field.getInt(object);
+			if(fieldValue>0 && fieldValue<=Integer.MAX_VALUE) {
+				value = fieldValue;
+			}
+		} catch (Exception e) {
+		}
+		return value;
 	}
 	
 	private class ImageSize  {
