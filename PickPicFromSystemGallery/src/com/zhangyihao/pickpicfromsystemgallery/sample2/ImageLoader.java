@@ -47,7 +47,7 @@ public class ImageLoader {
 	
 	public static ImageLoader getInstance() {
 		if(mInstance == null) {
-			synchronized (mInstance) {
+			synchronized (ImageLoader.class) {
 				if(mInstance == null) {
 					mInstance = new ImageLoader(DEFAULT_THERAD_COUNT, myType);
 				}
@@ -73,7 +73,7 @@ public class ImageLoader {
 
 			@Override
 			public void run() {
-				Looper.loop();
+				Looper.prepare();
 				mPoolThreadHandler = new Handler() {
 
 					@Override
@@ -180,7 +180,7 @@ public class ImageLoader {
 	protected Bitmap decodeBitmapFromPath(String path, int width, int height) {
 		BitmapFactory.Options options = new BitmapFactory.Options();
 		options.inJustDecodeBounds = true;
-		BitmapFactory.decodeFile(path);
+		BitmapFactory.decodeFile(path, options);
 		
 		options.inSampleSize = caculateInSampleSize(options, width, height);
 		options.inJustDecodeBounds = false;

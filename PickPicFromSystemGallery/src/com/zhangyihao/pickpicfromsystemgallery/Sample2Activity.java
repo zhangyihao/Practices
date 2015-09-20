@@ -2,6 +2,7 @@ package com.zhangyihao.pickpicfromsystemgallery;
 
 import java.io.File;
 import java.io.FilenameFilter;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
@@ -21,7 +22,6 @@ import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
 import android.provider.MediaStore;
-import android.text.NoCopySpan.Concrete;
 import android.util.DisplayMetrics;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -62,9 +62,6 @@ public class Sample2Activity extends Activity {
 		
 		mScreenHeight = outMetrics.heightPixels;
 		
-		initView();
-		getImages();
-		initEvent();
 		mHandler = new Handler() {
 			@Override
 			public void handleMessage(Message msg) {
@@ -76,6 +73,11 @@ public class Sample2Activity extends Activity {
 				}
 			}
 		};
+		mImageFolder = new ArrayList<ImageFolder>();
+		mImages = new ArrayList<String>();
+		initView();
+		getImages();
+		initEvent();
 	}
 	
 	protected void fillImg2GridView() {
@@ -108,7 +110,7 @@ public class Sample2Activity extends Activity {
 		new Thread() {
 			public void run() {
 				Uri mImgUri = MediaStore.Images.Media.EXTERNAL_CONTENT_URI;
-				Toast.makeText(Sample2Activity.this, "URI:"+mImgUri.toString(), Toast.LENGTH_LONG).show();
+//				Toast.makeText(Sample2Activity.this, "URI:"+mImgUri.toString(), Toast.LENGTH_LONG).show();
 				ContentResolver cr = Sample2Activity.this.getContentResolver();
 				Cursor cursor = cr.query(mImgUri, null, 
 						MediaStore.Images.Media.MIME_TYPE+"=? or "+ MediaStore.Images.Media.MIME_TYPE+"=? ",
@@ -170,6 +172,7 @@ public class Sample2Activity extends Activity {
 			this.mContent = context;
 			this.mImage = image;
 			this.dirPath = dirPath;
+			mLayoutInflater = LayoutInflater.from(context);
 		}
 		
 		@Override
