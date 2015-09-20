@@ -8,13 +8,12 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import com.zhangyihao.pickpicfromsystemgallery.sample2.ImageAdapter;
 import com.zhangyihao.pickpicfromsystemgallery.sample2.ImageFolder;
-import com.zhangyihao.pickpicfromsystemgallery.sample2.ImageLoader;
 
 import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.ContentResolver;
-import android.content.Context;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
@@ -23,13 +22,7 @@ import android.os.Handler;
 import android.os.Message;
 import android.provider.MediaStore;
 import android.util.DisplayMetrics;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.BaseAdapter;
 import android.widget.GridView;
-import android.widget.ImageButton;
-import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -99,7 +92,7 @@ public class Sample2Activity extends Activity {
 		mDirCountTextView = (TextView) findViewById(R.id.sample2_id_total_count);
 		mBottomRelativeLayout = (RelativeLayout) findViewById(R.id.sample2_id_bottom_ly);
 	}
-	
+
 	private void getImages() {
 		boolean mounted = Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED);
 		if(!mounted) {
@@ -160,61 +153,4 @@ public class Sample2Activity extends Activity {
 	private void initEvent() {
 		
 	}
-	
-	private class ImageAdapter extends BaseAdapter {
-
-		private Context mContent;
-		private List<String> mImage;
-		private String dirPath;
-		private LayoutInflater mLayoutInflater;
-		
-		public ImageAdapter(Context context, List<String> image, String dirPath) {
-			this.mContent = context;
-			this.mImage = image;
-			this.dirPath = dirPath;
-			mLayoutInflater = LayoutInflater.from(context);
-		}
-		
-		@Override
-		public int getCount() {
-			return this.mImage.size();
-		}
-
-		@Override
-		public Object getItem(int position) {
-			return this.mImage.get(position);
-		}
-
-		@Override
-		public long getItemId(int position) {
-			return position;
-		}
-
-		@Override
-		public View getView(int position, View convertView, ViewGroup parent) {
-			ViewHolder viewHolder = null;
-			if(convertView == null) {
-				convertView = mLayoutInflater.inflate(R.layout.sample2_gridview_item, parent, false);
-				viewHolder = new ViewHolder();
-				viewHolder.imageView = (ImageView) convertView.findViewById(R.id.sample2_gridview_item_image);
-				viewHolder.imageButton = (ImageButton) convertView.findViewById(R.id.sample2_gridview_item_delete);
-				convertView.setTag(viewHolder);
-			} else {
-				viewHolder = (ViewHolder) convertView.getTag();
-			}
-			viewHolder.imageView.setImageResource(R.drawable.pictures_no);
-			viewHolder.imageButton.setImageResource(R.drawable.picture_unselected);
-			
-			ImageLoader.getInstance().loadImage(dirPath+File.separator+mImage.get(position), viewHolder.imageView);
-			
-			return convertView;
-		}
-		
-		private class ViewHolder {
-			ImageView imageView;
-			ImageButton imageButton;
-		}
-		
-	}
-	
 }
