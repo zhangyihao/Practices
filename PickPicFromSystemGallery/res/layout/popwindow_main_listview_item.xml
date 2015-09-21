@@ -28,14 +28,14 @@
         android:orientation="horizontal">
         
         <TextView
-            android:id="@+id/id_dir_item_name"
+            android:id="@+id/popwindow_main_list_item_dir_name"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="所有图片"
             android:textSize="12sp" />
 
         <TextView
-            android:id="@+id/id_dir_item_count"
+            android:id="@+id/popwindow_main_list_item_count"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center"

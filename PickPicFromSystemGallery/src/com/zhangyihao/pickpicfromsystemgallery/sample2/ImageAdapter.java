@@ -84,7 +84,7 @@ public class ImageAdapter extends BaseAdapter{
 		});
 		
 		if(mSelectImage.contains(filePath)) {
-			viewHolder.imageView.setBackgroundColor(Color.parseColor("#77000000"));
+			viewHolder.imageView.setColorFilter(Color.parseColor("#77000000"));
 			viewHolder.imageButton.setImageResource(R.drawable.pictures_selected);
 		}
 		

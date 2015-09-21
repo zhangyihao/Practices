@@ -10,6 +10,8 @@ import java.util.Set;
 
 import com.zhangyihao.pickpicfromsystemgallery.sample2.ImageAdapter;
 import com.zhangyihao.pickpicfromsystemgallery.sample2.ImageFolder;
+import com.zhangyihao.pickpicfromsystemgallery.sample2.ListImageDirPopWindow;
+import com.zhangyihao.pickpicfromsystemgallery.sample2.ListImageDirPopWindow.OnDirSelectListener;
 
 import android.app.Activity;
 import android.app.ProgressDialog;
@@ -22,7 +24,10 @@ import android.os.Handler;
 import android.os.Message;
 import android.provider.MediaStore;
 import android.util.DisplayMetrics;
+import android.view.View;
+import android.view.WindowManager;
 import android.widget.GridView;
+import android.widget.PopupWindow;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -35,6 +40,9 @@ public class Sample2Activity extends Activity {
 	private TextView mDirCountTextView;
 	
 	private ProgressDialog mProgressDialog;
+	private ListImageDirPopWindow mListImagePopwindow;
+	
+	private ImageAdapter mImageAdapter;
 	
 	private int mScreenHeight;
 	private List<String> mImages;
@@ -62,6 +70,7 @@ public class Sample2Activity extends Activity {
 					if(mProgressDialog!=null) {
 						mProgressDialog.dismiss();
 						fillImg2GridView();
+						initDirPopWindow();
 					}
 				}
 			}
@@ -73,14 +82,70 @@ public class Sample2Activity extends Activity {
 		initEvent();
 	}
 	
+	protected void initDirPopWindow() {
+		mListImagePopwindow = new ListImageDirPopWindow(Sample2Activity.this, this.mImageFolder);
+		mListImagePopwindow.setOnDismissListener(new PopupWindow.OnDismissListener() {
+			
+			@Override
+			public void onDismiss() {
+				lightOn();
+			}
+		});
+		
+		mListImagePopwindow.setOnDirSelectListener(new OnDirSelectListener() {
+			
+			@Override
+			public void onSelect(ImageFolder imageFolder) {
+				mCurrnetDir = new File(imageFolder.getDir());
+				mImages = Arrays.asList( mCurrnetDir.list(new FilenameFilter() {
+					
+					@Override
+					public boolean accept(File dir, String filename) {
+						if(filename.endsWith(".jpg") 
+								|| filename.endsWith(".jpeg") || filename.endsWith(".png")) {
+							return true;
+						}
+						return false;
+					}
+				}));
+				
+				mImageAdapter = new ImageAdapter(Sample2Activity.this, mImages, mCurrnetDir.getAbsolutePath());
+				mGridView.setAdapter(mImageAdapter);
+				
+				mDirNameTextView.setText(imageFolder.getName());
+				mDirCountTextView.setText(mImages.size()+"");
+				mListImagePopwindow.dismiss();
+				
+			}
+		});
+	}
+
+	/**
+	 * 内容区域变亮
+	 */
+	protected void lightOn() {
+		WindowManager.LayoutParams lp = getWindow().getAttributes();
+		lp.alpha = 1.0f;
+		getWindow().setAttributes(lp);
+	}
+	
+	/**
+	 * 内容区域变暗
+	 */
+	protected void lightOff() {
+		WindowManager.LayoutParams lp = getWindow().getAttributes();
+		lp.alpha = 0.3f;
+		getWindow().setAttributes(lp);
+	}
+
 	protected void fillImg2GridView() {
 		if(mCurrnetDir==null) {
 			Toast.makeText(Sample2Activity.this, "未扫描到任何图片！", Toast.LENGTH_SHORT).show();
 			return;
 		}
 		mImages = Arrays.asList(mCurrnetDir.list());
-		ImageAdapter adapter = new ImageAdapter(this, mImages, mCurrnetDir.getAbsolutePath());
-		mGridView.setAdapter(adapter);
+		mImageAdapter = new ImageAdapter(this, mImages, mCurrnetDir.getAbsolutePath());
+		mGridView.setAdapter(mImageAdapter);
 		
 		mDirCountTextView.setText(""+mMaxCount);
 		mDirNameTextView.setText(mCurrnetDir.getName());
@@ -151,6 +216,13 @@ public class Sample2Activity extends Activity {
 	}
 	
 	private void initEvent() {
-		
+		this.mBottomRelativeLayout.setOnClickListener(new View.OnClickListener() {
+			
+			@Override
+			public void onClick(View v) {
+				Sample2Activity.this.mListImagePopwindow.showAsDropDown(Sample2Activity.this.mBottomRelativeLayout, 0, 0);
+				lightOff();
+			}
+		});
 	}
 }
