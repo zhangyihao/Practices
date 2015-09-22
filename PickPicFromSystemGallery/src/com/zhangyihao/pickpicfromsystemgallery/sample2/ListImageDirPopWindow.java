@@ -128,7 +128,8 @@ public class ListImageDirPopWindow extends PopupWindow {
 			holder.mDirName.setText(imageFolder.getName());
 			holder.mCount.setText(imageFolder.getCount()+"");
 			
-			return super.getView(position, convertView, parent);
+//			return super.getView(position, convertView, parent);
+			return convertView;
 		}
 		
 		private class ViewHolder {

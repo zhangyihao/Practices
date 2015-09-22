@@ -14,7 +14,8 @@
         android:paddingRight="12dp"
         android:paddingLeft="12dp"
         android:paddingTop="9dp"
-        android:scaleType="centerCrop"
+        android:scaleType="fitXY"
+        android:layout_centerVertical="true"
         android:src="@drawable/ic_launcher"
          />
     <LinearLayout 
@@ -25,7 +26,7 @@
         android:layout_marginStart="10dp"
         android:layout_toEndOf="@id/popwinow_main_list_item_imageview"
         android:layout_toRightOf="@id/popwinow_main_list_item_imageview"
-        android:orientation="horizontal">
+        android:orientation="vertical">
         
         <TextView
             android:id="@+id/popwindow_main_list_item_dir_name"
