@@ -3,7 +3,10 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent" >
 
-    <com.zhangyihao.swipemenudemo.SwipeListView android:id="@+id/activity_main_listview" >
+    <com.zhangyihao.swipemenudemo.SwipeListView
+        android:id="@+id/activity_main_listview"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" >
     </com.zhangyihao.swipemenudemo.SwipeListView>
-
+    
 </LinearLayout>

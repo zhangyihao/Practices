@@ -54,13 +54,13 @@ public class SwipeListViewAdapter extends BaseAdapter {
 		
 		SwipeBean bean = (SwipeBean)this.getItem(position);
 		holder.mDeleteTextView.setVisibility(View.VISIBLE);
-		holder.mDeleteTextView.setVisibility(View.VISIBLE);
-		if(bean.isCanDelete()) {
+		holder.mUploadTextView.setVisibility(View.VISIBLE);
+		if(!bean.isCanDelete()) {
 			holder.mDeleteTextView.setVisibility(View.GONE);
 		}
 		
-		if(bean.isCanUpload()) {
-			holder.mDeleteTextView.setVisibility(View.GONE);
+		if(!bean.isCanUpload()) {
+			holder.mUploadTextView.setVisibility(View.GONE);
 		}
 		
 		holder.mTitleTextView.setText(bean.getTitle());

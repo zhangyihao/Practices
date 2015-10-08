@@ -80,13 +80,12 @@ public class SwipeListViewItemLayout extends FrameLayout {
 			//当手指移动的时候，获取这个差值
 			int dist = (int) (this.mDownX - event.getX());
 			if(state == STATE_OPEN) {
-				dist += this.mMenuView.getWidth(); // 使用+=的原因，见swip方法
+				dist += this.mMenuView.getWidth(); // 当右侧菜单为打开状态时，移动距离要加上菜单的宽度
 			}
 			swipe(dist);
 			break;
 		case MotionEvent.ACTION_UP:
 			//这里其实是一个判断，当用户滑了menuView的一半的时候，自动滑出来，否则滑进去。
-			// TODO 一半是不是太长了？
             if ((mDownX - event.getX()) > (this.mMenuView.getWidth() / 2)) {
                 // 平滑的滑出
                 smoothOpenMenu();
@@ -109,7 +108,7 @@ public class SwipeListViewItemLayout extends FrameLayout {
 
 	public void smoothOpenMenu() {
 		this.state = STATE_OPEN;
-		this.mOpenScroller.startScroll(-this.mContentView.getLeft(), 0, this.mMenuView.getWidth(), 350);
+		this.mOpenScroller.startScroll(-this.mContentView.getLeft(), 0, this.mMenuView.getWidth(), 0, 350);
 		postInvalidate();
 	}
 
@@ -128,7 +127,7 @@ public class SwipeListViewItemLayout extends FrameLayout {
     		dist = 0;
     	}
     	this.mContentView.layout(-dist, this.mContentView.getTop(), this.mContentView.getWidth() - dist, getMeasuredHeight());
-    	this.mMenuView.layout(this.mMenuView.getWidth()-dist, this.mMenuView.getTop(),
+    	this.mMenuView.layout(this.mContentView.getWidth()-dist, this.mMenuView.getTop(),
     			this.mContentView.getWidth()+this.mMenuView.getWidth()-dist, this.mMenuView.getBottom() );
     }
 

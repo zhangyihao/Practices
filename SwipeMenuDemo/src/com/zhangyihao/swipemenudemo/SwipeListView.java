@@ -1,5 +1,6 @@
 package com.zhangyihao.swipemenudemo;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.util.AttributeSet;
 import android.util.TypedValue;
@@ -67,6 +68,7 @@ public class SwipeListView extends ListView {
 		this.mOpenInterpolator = mOpenInterpolator;
 	}
 
+	@SuppressLint("ClickableViewAccessibility")
 	@Override
 	public boolean onTouchEvent(MotionEvent ev) {
 		if(ev.getAction() != MotionEvent.ACTION_DOWN && this.mTouchView == null) {
